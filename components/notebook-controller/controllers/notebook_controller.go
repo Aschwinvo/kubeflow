@@ -253,6 +253,11 @@ func (r *NotebookReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 					oldConditions[0].Message != newCondition.Message {
 					log.Info("Appending to conditions: ", "namespace", instance.Namespace, "name", instance.Name, "type", newCondition.Type, "reason", newCondition.Reason, "message", newCondition.Message)
 					instance.Status.Conditions = append([]v1beta1.NotebookCondition{newCondition}, oldConditions...)
+
+					maxHistoryLimit := 20
+					if len(instance.Status.Conditions) > maxHistoryLimit {
+						instance.Status.Conditions = instance.Status.Conditions[:len(instance.Status.Conditions)-1]
+					}
 				}
 				err = r.Status().Update(ctx, instance)
 				if err != nil {
